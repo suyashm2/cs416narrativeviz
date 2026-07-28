@@ -1,6 +1,19 @@
 <html>
-    <body>
-        <title>Hello World!</title>
-        <p> This is a sample paragraph.</p>
+<script src = 'https://d3js.org/d3.v5.min.js'> </script>
+    <body onload = 'init()'>
+    <script>
+        async function init() {
+            const data = await d3.csv('./World_University_Rankings_2023.csv')
+            console.log(data)
+            d3.select('body')
+            .selectAll('p')
+            .data(data)
+            .enter()
+            .append('p')
+            .html(function(d,i)) {return 'item ' +
+                d['Name of University'] + ' is ';
+            }
+        };
+    </script>
     </body>
 </html>
