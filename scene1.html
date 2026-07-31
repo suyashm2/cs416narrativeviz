@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="https://rawgit.com/susielu/d3-annotation/master/d3-annotation.min.js"></script>
+    <style>
+        .chart rect { 
+            fill: rgb(165, 124, 42); 
+        }
+        
+        .chart rect:hover {
+            fill: orange; 
+        }
+
+        h1 {
+            color: black;
+            font-family: sans-serif;
+        }
+
+
+        #tooltip {
+            opacity: 0;
+            position: absolute;
+            text-align: center;
+            min-width: 120px;     
+            height: auto; 
+            padding: 8px 12px;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-shadow: 2px 2px 6px rgba(0,0,0,0.15);
+            font-family: sans-serif;
+            font-size: 12px;
+            pointer-events: none;  
+            transition: opacity 0.15s ease-in-out;
+        }
+    </style>
+</head>
+<body onload="init()">
+
+    <h1>Top 150 Global Universities in 2023</h1>
+    <div id="tooltip"></div>
+    <svg class="chart"></svg>
+
+    <div class="Scene navigation">
+      <div class="nav-box-title">Navigate to Next Scene by Clicking Arrow</div>
+      <div class="nav-numbers">
+        <a href="scene2.html" class="nav-num">&rarr;</a>
+      </div>
+    </div>
+
+    <script>
+        async function init() {
+            const data = await d3.csv('./aggregatedRankings.csv');
+
+
+            const margin = { top: 20, right: 20, bottom: 70, left: 40 };
+            const width = 500 - margin.left - margin.right;
+            const height = 300 - margin.top - margin.bottom;
+
+            const tooltip = d3.select("#tooltip");
+
+
+            const x = d3.scaleBand()
+                        .domain(data.map(d => d.Location))
+                        .range([0, width])
+                        .padding(0.2);
+
+            const y = d3.scaleLinear()
+                        .domain([0, 50])
+                        .range([height, 0]);
+
+            const svg = d3.select('.chart')
+                          .attr("width", width + margin.left + margin.right)
+                          .attr("height", height + margin.top + margin.bottom)
+                          .append("g")
+                          .attr("transform", `translate(${margin.left},${margin.top})`);
+
+            svg.selectAll('rect')
+               .data(data.slice(0,2))
+               .enter()
+               .append('rect')
+               .attr("x", d => x(d.Location))
+               .attr("y", d => y(+d.University_Count))
+               //.attr("width", x.bandwidth())
+               //.attr("height", d => height - y(+d.University_Count))
+
+            svg.append("g")
+            .attr("transform", "translate("+2+", "+2+")")
+            .call(d3.axisLeft(y))
+
+             svg.append("g")
+            .attr("class", "x-axis")
+            .attr("transform", `translate(5, ${height})`)
+            .call(d3.axisBottom(x))
+            .selectAll("text")
+                .attr("transform", "translate(-12, 35) rotate(-90)")
+
+
+            svg.selectAll("rect").attr("y", height)
+               .attr("height", 0)
+               .transition()
+               .delay((d, i) => i * 150)
+               .ease(d3.easeCubicOut)
+               .attr("width", x.bandwidth())
+               .attr("y", d => y(+d.University_Count))
+               .attr("height", d => height - y(+d.University_Count))
+
+
+
+
+
+            // mouseover events for tooltips
+            svg.selectAll("rect").on("mouseover", function(d) {
+                tooltip.style("opacity", 1)
+                        .html("Location: " + d.Location + "<br/>" +
+                            "Total Universities in top 150: " + d.University_Count + "<br/>" +
+                            "Avg Teaching Score: " + d.Avg_Teaching_Score + "<br/>" +
+                            "Avg Research Score: " + d.Avg_Research_Score + "<br/>" +
+                            "Avg Citations Score: " + d.Avg_Citations_Score);
+            })
+            .on("mousemove", function() {
+                tooltip.style("left", (d3.event.pageX + 12) + "px")
+                        .style("top", (d3.event.pageY + 12) + "px");
+            })
+            .on("mouseout", function() {
+                tooltip.style("opacity", 0);
+            });
+               
+            
+            // creating annotation in the form of text in rectangle
+            const cardX = 140;
+            const cardY = 30;
+            const cardWidth = 255;
+            const cardHeight = 40;
+
+             svg.append("g")
+            .attr("class", "simple-annotation");
+
+            svg.append("rect")
+            .attr("x", cardX)
+            .attr("y", cardY)
+            .attr("width", cardWidth)
+            .attr("height", cardHeight)
+            svg.append("text")
+            .attr("x", cardX + 10)          
+            .attr("y", cardY + 15)           
+            .attr("font-size", "12px")
+            .text("The United States and United Kingdom account")
+
+            svg.append("text")
+            .attr("x", cardX + 10)
+            .attr("y", cardY + 30)
+            .attr("font-size", "12px")
+            .text("for 47 percent of the top 150 global universities ")
+
+            
+            
+
+    
+
+        }
+    </script>
+</body>
+</html>
