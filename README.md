@@ -1,2 +1,1 @@
-# cs416narrativeviz
-Narrative visualization final project
+Narrative visualization showing global top 150 universities
